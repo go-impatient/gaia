@@ -1,0 +1,58 @@
+{
+  "app": {
+    "mode": "dev",
+    "host": "0.0.0.0",
+    "port": 9090,
+    "read_timeout": "60s",
+    "write_timeout": "60s",
+    "idle_timeout": "60s",
+    "max_ping_count": 2,
+    "jwt_secret": "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5",
+    "tls": {
+      "port": 9098,
+      "cert_path": "",
+      "key_path": ""
+    },
+    "auto_tls": {
+      "enabled": false,
+      "folder": ".cache",
+      "host": ""
+    }
+  },
+  "database": {
+    "dialect": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "123456",
+    "database": "gaia",
+    "ssl": false,
+    "max_idle_conns": 0,
+    "max_open_conns": 0,
+    "logging": true
+  },
+  "log": {
+    "path": "/logs/gaia.log",
+    "level": "info",
+    "format": "json"
+  },
+  "mail":{
+    "enabled": true,
+    "username": "yourGmailUsername",
+    "password": "yourGmailAppPassword",
+    "mail_server": "smtp.163.com",
+    "port": 587,
+    "from": "from@gmail.com"
+  },
+  "cache": {
+    "type": "none",
+    "timeout": 60,
+    "redis": {
+      "host": "localhost",
+      "port": 6379,
+      "password": "",
+      "db": 0,
+      "key_prefix": "__:::gaia:"
+    }
+  }
+}
