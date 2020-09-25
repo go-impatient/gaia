@@ -2,12 +2,17 @@ package ginhttp
 
 import (
 	"fmt"
-	"github.com/go-impatient/gaia/app/conf"
+	"net/http"
 	"time"
+
+	"github.com/go-impatient/gaia/app/conf"
 )
 
-// ServerOptions http server options
-type ServerOptions struct {
+// Option can be applied in server
+type OptionFunc func(s *Server)
+
+// Options http server options
+type Options struct {
 	// run mode 可选 dev/prod/test
 	Mode string `json:"mode"`
 	// TCP address to listen on, ":http" if empty
@@ -35,22 +40,65 @@ type ServerOptions struct {
 	IdleTimeout time.Duration `json:"idle_timeout"`
 }
 
-func DefaultOptions() *ServerOptions {
-	return &ServerOptions{
+func DefaultOptions() *Options {
+	return &Options{
 		Mode:         "dev",
-		Addr:         ":9090",
+		Addr:         ":4000",
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 		IdleTimeout:  5 * time.Second,
 	}
 }
 
-func NewServerOptions(c *conf.App) *ServerOptions {
-	return &ServerOptions{
+func NewServerOptions(c *conf.App) *Options {
+	return &Options{
 		Mode:         c.Mode,
 		Addr:         fmt.Sprintf("%s:%d", c.Host, c.Port),
 		ReadTimeout:  c.ReadTimeout,
 		WriteTimeout: c.WriteTimeout,
 		IdleTimeout:  c.IdleTimeout,
+	}
+}
+
+func Addr(a string) OptionFunc {
+	return func(s *Server) {
+		s.opts.Addr = a
+	}
+}
+
+func Mode(a string) OptionFunc {
+	return func(s *Server) {
+		s.opts.Mode = a
+	}
+}
+
+func Grace(a bool) OptionFunc {
+	return func(s *Server) {
+		s.opts.Grace = a
+	}
+}
+
+func ReadTimeout(a time.Duration) OptionFunc {
+	return func(s *Server) {
+		s.opts.ReadTimeout = a
+	}
+}
+
+func WriteTimeout(a time.Duration) OptionFunc {
+	return func(s *Server) {
+		s.opts.WriteTimeout = a
+	}
+}
+
+func IdleTimeout(a time.Duration) OptionFunc {
+	return func(s *Server) {
+		s.opts.IdleTimeout = a
+	}
+}
+
+// App option sets custom Gin App to Server
+func App(app *http.Server) OptionFunc {
+	return func(s *Server) {
+		s.app = app
 	}
 }

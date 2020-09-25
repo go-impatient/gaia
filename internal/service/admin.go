@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/go-impatient/gaia/internal/model"
 	"github.com/go-impatient/gaia/internal/repository"
 )

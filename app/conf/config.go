@@ -1,9 +1,10 @@
 package conf
 
 import (
-	"github.com/go-impatient/gaia/pkg/conf"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+
+	"github.com/go-impatient/gaia/pkg/conf"
 )
 
 // Config ...
@@ -48,9 +49,9 @@ func InitConfig(name string, format string) (*ConfigTpl, error) {
 	MailConfig = NewMailConfig(mail)
 
 	// 缓存配置
-	cache := viper.Sub("cache")
+	cache := viper.Sub("xcache")
 	if cache == nil {
-		return nil, errors.New("No found `cache` in the configuration")
+		return nil, errors.New("No found `xcache` in the configuration")
 	}
 	CacheConfig = NewCacheConfig(cache)
 

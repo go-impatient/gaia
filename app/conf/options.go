@@ -1,13 +1,15 @@
 package conf
 
 import (
-	"github.com/spf13/viper"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 // App ...
 type App struct {
-	Mode         string        `json:"mode" yaml:"mode"` // "dev" | "prod" | "test"
+	Mode         string        `json:"mode" yaml:"mode"`   // "dev" | "prod" | "test"
+	Grace        bool          `json:"grace" yaml:"grace"` // 默认 false, 可选 pprof 为空不使用
 	Host         string        `json:"host" yaml:"host"`
 	Port         int           `json:"port" yaml:"port"`
 	ReadTimeout  time.Duration `json:"read_timeout" yaml:"read_timeout"`
@@ -21,16 +23,15 @@ type App struct {
 
 // TLS ...
 type TLS struct {
-	Port     int    `json:"port" yaml:"port"`
 	CertPath string `json:"cert_path" yaml:"cert_path"`
 	KeyPath  string `json:"key_path" yaml:"key_path"`
 }
 
 // AutoTLS ...
 type AutoTLS struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"` //Automatically install TLS certificates from Let's Encrypt.
+	Enabled bool   `json:"enabled" yaml:"enabled"` // Automatically install TLS certificates from Let's Encrypt.
 	Folder  string `json:"folder" yaml:"folder"`   // folder for storing TLS certificates
-	Host    string `json:"host" yaml:"string"`     // which domains the Let's Encrypt will attempt
+	Host    string `json:"host" yaml:"string"`     // invalid hosts will be silently ignored.
 }
 
 // DB ...
@@ -86,12 +87,13 @@ type ConfigTpl struct {
 	Database *DB    `json:"database" yaml:"database"`
 	Log      *Log   `json:"log" yaml:"log"`
 	Mail     *Mail  `json:"mail" yaml:"mail"`
-	Cache    *Cache `json:"cache" yaml:"cache"`
+	Cache    *Cache `json:"xcache" yaml:"xcache"`
 }
 
 // NewAppConfig ...
 func NewAppConfig(cfg *viper.Viper) *App {
 	return &App{
+		Grace:        cfg.GetBool("grace"),
 		Mode:         cfg.GetString("mode"),
 		Host:         cfg.GetString("host"),
 		Port:         cfg.GetInt("port"),
@@ -99,7 +101,6 @@ func NewAppConfig(cfg *viper.Viper) *App {
 		WriteTimeout: cfg.GetDuration("write_timeout"),
 		IdleTimeout:  cfg.GetDuration("idle_timeout"),
 		TLS: &TLS{
-			Port:     cfg.GetInt("tls.port"),
 			CertPath: cfg.GetString("tls.cert_path"),
 			KeyPath:  cfg.GetString("tls.key_path"),
 		},

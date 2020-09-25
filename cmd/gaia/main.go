@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-impatient/gaia/cmd/gaia/create"
-	"github.com/go-impatient/gaia/cmd/gaia/server"
-	"github.com/urfave/cli/v2"
 	"os"
 	"time"
+
+	"github.com/urfave/cli/v2"
+
+	"github.com/go-impatient/gaia/cmd/gaia/create"
+	"github.com/go-impatient/gaia/cmd/gaia/server"
 )
 
 const Version = "v1.0.0"
@@ -26,7 +28,7 @@ func run() {
 	app.Version = Version
 	app.Compiled = time.Now()
 	app.Authors = []*cli.Author{
-		&cli.Author{
+		{
 			Name:  "moocss",
 			Email: "moocss@gmail.com",
 		},

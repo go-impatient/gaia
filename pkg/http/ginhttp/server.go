@@ -4,29 +4,39 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-impatient/gaia/app/conf"
-	"github.com/go-impatient/gaia/pkg/http/bootstrap"
-	"github.com/pkg/errors"
-	"golang.org/x/crypto/acme/autocert"
-	"golang.org/x/sync/errgroup"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"golang.org/x/crypto/acme/autocert"
+
+	"github.com/go-impatient/gaia/app/conf"
+	"github.com/go-impatient/gaia/pkg/http/bootstrap"
+	"github.com/go-impatient/gaia/pkg/http/ginhttp/grace"
 )
 
 type Server struct {
-	server      *http.Server
+	app         *http.Server
 	beforeFuncs []bootstrap.BeforeServerStartFunc
 	afterFuncs  []bootstrap.AfterServerStopFunc
-	opts        ServerOptions
+	opts        Options
 	exit        chan os.Signal
 }
 
-func NewServer() *Server {
+// NewServerWithOptions with options
+func NewServerWithOptions(opts Options) *Server {
+	s := &Server{
+		opts: opts,
+	}
+	return s
+}
+
+func NewServer(options ...OptionFunc) *Server {
 	opts := NewServerOptions(conf.AppConfig)
 	s := new(Server)
 	s.opts.IdleTimeout = opts.IdleTimeout
@@ -34,10 +44,6 @@ func NewServer() *Server {
 	s.opts.WriteTimeout = opts.WriteTimeout
 	s.opts.Addr = opts.Addr
 	s.opts.Mode = opts.Mode
-
-	// 设置开发模式
-	SetRuntimeMode(opts.Mode)
-
 	handler := gin.New()
 	server := &http.Server{
 		Addr:         opts.Addr,
@@ -46,8 +52,14 @@ func NewServer() *Server {
 		WriteTimeout: opts.WriteTimeout,
 		IdleTimeout:  opts.IdleTimeout,
 	}
+
+	s.app = server
 	s.exit = make(chan os.Signal, 2)
-	s.server = server
+
+	for _, o := range options {
+		o(s)
+	}
+
 	return s
 }
 
@@ -65,19 +77,8 @@ func SetRuntimeMode(mode string) {
 	}
 }
 
-// RunHTTPServer provide run http or https protocol.
-func (s *Server) RunHTTPServer() error {
-	if conf.AppConfig.AutoTLS.Enabled {
-		return s.autoTLSServer()
-	} else if len(conf.AppConfig.TLS.CertPath) > 0 && len(conf.AppConfig.TLS.KeyPath) > 0 {
-		return s.defaultTLSServer()
-	} else {
-		return s.defaultServer()
-	}
-}
-
 // Serve serve http request
-func (s *Server) defaultServer() error {
+func (s *Server) Serve() error {
 	var err error
 	for _, fn := range s.beforeFuncs {
 		err = fn()
@@ -86,8 +87,26 @@ func (s *Server) defaultServer() error {
 		}
 	}
 
-	go s.waitShutdown()
-	err = s.server.ListenAndServe()
+	if s.opts.Grace {
+		grace.Start(s.opts.Addr, s.app)
+	} else {
+		signal.Notify(s.exit, os.Interrupt, syscall.SIGTERM)
+		go s.waitShutdown()
+		log.Printf("Gin-Server http server start and serve:%v", s.opts.Addr)
+		if conf.AppConfig.AutoTLS.Enabled {
+			log.Printf("Gin-Server 'RunAutoTls()'")
+			err = s.RunAutoTls(conf.AppConfig.AutoTLS.Folder, conf.AppConfig.AutoTLS.Host)
+		} else if len(conf.AppConfig.TLS.CertPath) > 0 && len(conf.AppConfig.TLS.KeyPath) > 0 {
+			log.Printf("Gin-Server 'RunTls()'")
+			err = s.RunTls(conf.AppConfig.TLS.CertPath, conf.AppConfig.TLS.KeyPath)
+			//} else if s.app.TLSConfig == nil {
+			//	log.Printf("Gin-Server 'Run()'")
+			//	err = s.Run(s.opts.Addr)
+		} else {
+			log.Printf("Gin-Server 'ListenAndServe()'")
+			err = s.Run()
+		}
+	}
 
 	for _, fn := range s.afterFuncs {
 		fn()
@@ -95,114 +114,91 @@ func (s *Server) defaultServer() error {
 	return err
 }
 
-func (s *Server) autoTLSServer() error {
-	var g errgroup.Group
+// Run runs a web server
+func (s *Server) Run() error {
+	return s.app.ListenAndServe()
+}
 
-	dir := filepath.Join(os.Getenv("HOME"), ".cache", "go-autocert")
-	_ = os.MkdirAll(dir, 0700)
+// Run  LetsEncrypt HTTPS servers.
+func (s *Server) RunDefTls(addr ...string) error {
+	r := s.GetGinEngine()
+	return http.Serve(autocert.NewListener(addr...), r)
+}
 
-	manager := &autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		HostPolicy: autocert.HostWhitelist(conf.Config.App.AutoTLS.Host),
-		// Cache:      autocert.DirCache(app.config.Core.AutoTLS.Folder),
-		Cache: autocert.DirCache(dir),
+// Run runs a tls web server
+func (s *Server) RunTls(certPath, keyPath string) error {
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		return err
 	}
 
-	g.Go(func() error {
-		return http.ListenAndServe(":http", manager.HTTPHandler(http.HandlerFunc(s.redirect)))
-	})
+	config := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+		NextProtos:   []string{"http/1.1"}, // disable h2 because Safari :(
+	}
 
-	g.Go(func() error {
-		var err error
-		for _, fn := range s.beforeFuncs {
-			err = fn()
-			if err != nil {
-				return err
-			}
-		}
+	s.app.TLSConfig = config
 
-		s.server.TLSConfig = &tls.Config{
-			GetCertificate: manager.GetCertificate,
-			NextProtos:     []string{"http/1.1"}, // disable h2 because Safari :(
-		}
-
-		go s.waitShutdown()
-		log.Printf("Start to listening the incoming requests on https address")
-		err = s.server.ListenAndServeTLS("", "")
-
-		for _, fn := range s.afterFuncs {
-			fn()
-		}
-		return err
-	})
-
-	return g.Wait()
+	return s.app.ListenAndServeTLS("", "")
 }
 
-func (s *Server) defaultTLSServer() error {
-	var g errgroup.Group
-	g.Go(func() error {
-		return http.ListenAndServe(":http", http.HandlerFunc(s.redirect))
-	})
-	g.Go(func() error {
-		var err error
-		for _, fn := range s.beforeFuncs {
-			err = fn()
-			if err != nil {
-				return err
-			}
-		}
+// Run runs a auto tls web server, host = ("example1.com", "example2.com")
+func (s *Server) RunAutoTls(folder string, host ...string) error {
 
-		s.server.Addr = fmt.Sprintf("%s:%d", "0.0.0.0", conf.AppConfig.TLS.Port)
-		s.server.TLSConfig = &tls.Config{
-			NextProtos: []string{"http/1.1"}, // disable h2 because Safari :(
-		}
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(host...),
+		Cache:      autocert.DirCache(folder),
+	}
 
-		go s.waitShutdown()
-		log.Printf("Start to listening the incoming requests on https address: %d", conf.AppConfig.TLS.Port)
-		err = s.server.ListenAndServeTLS(
-			conf.Config.App.TLS.CertPath,
-			conf.Config.App.TLS.KeyPath,
-		)
+	s.app.TLSConfig = m.TLSConfig()
+	s.app.Addr = ":https"
 
-		for _, fn := range s.afterFuncs {
-			fn()
-		}
-		return err
-	})
-	return g.Wait()
+	go http.ListenAndServe(":http", m.HTTPHandler(http.HandlerFunc(s.redirect)))
+	return s.app.ListenAndServeTLS("", "")
 }
 
-// redirect ...
-func (s *Server) redirect(w http.ResponseWriter, req *http.Request) {
-	var serverHost = conf.Config.App.Host
-	serverHost = strings.TrimPrefix(serverHost, "http://")
-	serverHost = strings.TrimPrefix(serverHost, "https://")
-	req.URL.Scheme = "https"
-	req.URL.Host = serverHost
-
-	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
-
-	http.Redirect(w, req, req.URL.String(), http.StatusMovedPermanently)
+func (s *Server) Router() *gin.Engine {
+	return s.GetGinEngine()
 }
 
-// Shutdown close http server
+func (s *Server) GetGinEngine() *gin.Engine {
+	return s.app.Handler.(*gin.Engine)
+}
+
+func (s *Server) GetServer() *http.Server {
+	return s.app
+}
+
+// Shutdown 平滑关闭服务
 func (s *Server) waitShutdown() {
 	<-s.exit
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	log.Printf("GIN-Server", "shutdown http server ...")
+	log.Printf("GIN-Server shutdown http server ...")
 
-	err := s.server.Shutdown(ctx)
+	err := s.app.Shutdown(ctx)
+
 	if err != nil {
-		log.Fatalf("GIN-Server", "shutdown http server error:%s", err)
+		log.Fatalf("GIN-Server shutdown http server error:%s", err)
 	}
 
-	os.Exit(0)
-
 	return
+}
+
+func (s *Server) redirect(w http.ResponseWriter, req *http.Request) {
+	target := "https://" + req.Host + req.URL.Path
+
+	if len(req.URL.RawQuery) > 0 {
+		target += "?" + req.URL.RawQuery
+	}
+
+	w.Header().Set("Strict-Transport-Security", "max-age=31536000")
+
+	http.Redirect(w, req, target, http.StatusTemporaryRedirect)
 }
 
 // PingServer 服务心跳检查
@@ -222,14 +218,6 @@ func (s *Server) PingServer() (err error) {
 	}
 	err = errors.New("Cannot connect to the router.")
 	return
-}
-
-func (s *Server) GetServer() *http.Server {
-	return s.server
-}
-
-func (s *Server) GetGinEngine() *gin.Engine {
-	return s.server.Handler.(*gin.Engine)
 }
 
 func (s *Server) AddBeforeServerStartFunc(fns ...bootstrap.BeforeServerStartFunc) {

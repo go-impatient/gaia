@@ -2,8 +2,9 @@ package sql
 
 import (
 	"context"
-	"gorm.io/gorm/logger"
 	"time"
+
+	"gorm.io/gorm/logger"
 )
 
 type nopLogger struct {

@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"fmt"
-	"github.com/go-impatient/gaia/internal/model"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strings"
 	"unicode"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/go-impatient/gaia/internal/model"
+	"github.com/go-playground/validator/v10"
 )
 
 // Handler creates a gin middleware for handling errors.

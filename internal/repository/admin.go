@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
-	"github.com/go-impatient/gaia/internal/schema"
+
 	"gorm.io/gorm"
+
+	"github.com/go-impatient/gaia/internal/schema"
 )
 
 // AdminRepository interface

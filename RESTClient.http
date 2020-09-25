@@ -1,10 +1,10 @@
 ### 用户查询
-GET http://localhost:9090/user HTTP/1.1
+GET https://localhost:4000/user HTTP/1.1
 content-type: application/json
 Authorization: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTU4ODA1MzA3MCwiZXhwIjoxNTg4MTM5NDcwfQ.gO0bQfXQilekso0s3L_JXWPCXQNSLZQRc0OsE7qSAn2BjvptuWFbXrFuJ9Hht3qPmIihTX-Ab1bskC-DRUrHWVHJvrWbyMVMnbd5XnbOdxCnwviRXaIDEGAJrAX2CkYCq6q9WDuMDrxl2S6FVGjXNt8JZiW6fsPfFdakV2Z_rh5EAkzWGMTWNP7ip-LqpBXuldY1nzwI14sCxMt4LonH_XR_Q9MCylD4eHgOzBV7bNbRE-4cj0Cig9zD2vS9Wc-yhZfnmr5MN4ggleSgpb81LDN3yWgsJCUGwG07L7wiqOLcXEA2OWVVK99VGPPnWqUVL1k2SEwcjIbMzoUkR_MU-w
 
 ### 用户登录
-POST http://localhost:9090/user/login HTTP/1.1
+POST https://localhost:4000/user/login HTTP/1.1
 content-type: application/json
 
 {
@@ -14,7 +14,7 @@ content-type: application/json
 
 
 ### 用户注册
-POST http://localhost:9090/user/register HTTP/1.1
+POST https://localhost:4000/user/register HTTP/1.1
 content-type: application/json
 
 {

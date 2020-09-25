@@ -1,6 +1,8 @@
 package dig
 
-import "go.uber.org/dig"
+import (
+	"go.uber.org/dig"
+)
 
 var globalDig = dig.New()
 

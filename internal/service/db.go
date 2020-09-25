@@ -2,12 +2,14 @@ package service
 
 import (
 	"database/sql"
-	"github.com/go-impatient/gaia/app/conf"
-	sqlx "github.com/go-impatient/gaia/pkg/sql"
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"log"
 	"time"
+
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
+
+	"github.com/go-impatient/gaia/app/conf"
+	sqlx "github.com/go-impatient/gaia/pkg/sql"
 )
 
 // SQL ...

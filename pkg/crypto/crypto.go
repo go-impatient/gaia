@@ -4,8 +4,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"github.com/go-impatient/gaia/pkg/base64"
 	"io"
+
+	"github.com/go-impatient/gaia/pkg/base64"
 )
 
 // AesEncrypt takes in a string, a key and returns encrypted string

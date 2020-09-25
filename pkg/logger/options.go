@@ -3,9 +3,10 @@ package logger
 import (
 	"context"
 	"fmt"
-	"github.com/rs/zerolog"
 	"io"
 	"strings"
+
+	"github.com/rs/zerolog"
 )
 
 // Log format enum

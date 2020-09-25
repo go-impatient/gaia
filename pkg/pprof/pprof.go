@@ -1,7 +1,6 @@
 package pprof
 
 import (
-	"github.com/spf13/viper"
 	"log"
 	"net"
 	"net/http"
@@ -9,6 +8,7 @@ import (
 	"runtime/debug"
 
 	"github.com/spf13/cast"
+	"github.com/spf13/viper"
 )
 
 func Pprof() {

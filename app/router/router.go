@@ -1,13 +1,15 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+
 	"github.com/go-impatient/gaia/app/handler"
 	sdHandle "github.com/go-impatient/gaia/app/handler/sd"
 	"github.com/go-impatient/gaia/app/middleware"
 	"github.com/go-impatient/gaia/internal/model"
 	"github.com/go-impatient/gaia/internal/service"
-	"net/http"
 )
 
 func rootHandler(c *gin.Context) {
@@ -27,8 +29,8 @@ func NotFound() gin.HandlerFunc {
 	}
 }
 
-// NewRouter ...
-func NewRouter(router *gin.Engine, services *service.Services) {
+// RegisterRoutes ...
+func RegisterRoutes(router *gin.Engine, services *service.Services) {
 	// 使用中间件.
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())

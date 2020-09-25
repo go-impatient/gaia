@@ -2,10 +2,12 @@ package service
 
 import (
 	"context"
+
+	"github.com/rs/zerolog/log"
+
 	"github.com/go-impatient/gaia/internal/model"
 	"github.com/go-impatient/gaia/internal/repository"
 	"github.com/go-impatient/gaia/internal/schema"
-	"github.com/rs/zerolog/log"
 )
 
 type UserService interface {

@@ -1,11 +1,12 @@
-package adaptors
+package cache
 
 import (
 	"context"
-	"github.com/allegro/bigcache"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/allegro/bigcache"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBigCacheSetGet(t *testing.T) {
@@ -18,7 +19,7 @@ func TestBigCacheSetGet(t *testing.T) {
 		HardMaxCacheSize:   100,
 	})
 	if !assert.NoError(t, err) {
-		t.Fatal("fail to initialize big cache")
+		t.Fatal("fail to initialize big xcache")
 	}
 
 	bigCacheAdaptor := NewBigCacheAdaptor(bigCacheInstance)

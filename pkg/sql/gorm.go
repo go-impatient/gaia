@@ -2,14 +2,16 @@ package sql
 
 import (
 	"fmt"
-	"github.com/go-impatient/gaia/pkg/mutex"
+	"log"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"time"
+
+	"github.com/go-impatient/gaia/pkg/mutex"
 )
 
 // OpenConnection... 连接数据库

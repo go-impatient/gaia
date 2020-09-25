@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
-	"github.com/go-impatient/gaia/internal/schema"
+
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
+
+	"github.com/go-impatient/gaia/internal/schema"
 )
 
 // UserRepository interface

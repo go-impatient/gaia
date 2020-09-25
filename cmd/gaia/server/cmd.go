@@ -3,16 +3,18 @@ package server
 import (
 	"errors"
 	"fmt"
+	"path"
+
+	"github.com/rs/zerolog/log"
+	"github.com/urfave/cli/v2"
+	"golang.org/x/sync/errgroup"
+
 	"github.com/go-impatient/gaia/app/conf"
 	"github.com/go-impatient/gaia/app/router"
 	"github.com/go-impatient/gaia/internal/repository"
 	"github.com/go-impatient/gaia/internal/service"
 	"github.com/go-impatient/gaia/pkg/http/ginhttp"
 	"github.com/go-impatient/gaia/pkg/logger"
-	"github.com/rs/zerolog/log"
-	"github.com/urfave/cli/v2"
-	"golang.org/x/sync/errgroup"
-	"path"
 )
 
 var flags = []cli.Flag{
@@ -49,7 +51,7 @@ var Cmd = &cli.Command{
 
 // 运行服务
 func start(c *cli.Context) error {
-	var group errgroup.Group
+	// var group errgroup.Group
 	fileName := c.String("config")
 	if len(fileName) == 0 {
 		return errors.New("server s -c ./../../config/config.json 或者 server start -config ./../../config/config.json")
@@ -76,6 +78,7 @@ func start(c *cli.Context) error {
 
 	// 3. 初始化数据库
 	sql := service.NewSQL()
+	defer sql.Close()
 
 	// 4. 初始化 repositories and services
 	userRepo := repository.NewUserRepository(sql.DB)
@@ -86,24 +89,29 @@ func start(c *cli.Context) error {
 
 	// 5. 初始化应用服务
 	serve := ginhttp.NewServer()
+	ginhttp.SetRuntimeMode(cfg.App.Mode)
 	// 5.1 初始化路由
-	g := serve.GetGinEngine()
-	router.NewRouter(g, s)
+	r := serve.Router()
+	router.RegisterRoutes(r, s)
+
 	// 5.2 启动服务
-	group.Go(func() error {
-		return serve.RunHTTPServer()
-	})
+	serve.Serve()
+	//group.Go(func() error {
+	//	return serve.RunHTTPServer()
+	//})
 
 	// 5.3 健康检查
-	group.Go(func() error {
-		return serve.PingServer()
-	})
+	//group.Go(func() error {
+	//	return serve.PingServer()
+	//})
 
-	if err := group.Wait(); err != nil {
-		log.Error().Msg(fmt.Sprintf("接口服务停止了：%v", err))
-	}
+	//if err := group.Wait(); err != nil {
+	//	log.Error().Msg(fmt.Sprintf("接口服务停止了：%v", err))
+	//}
+	//
+	//return group.Wait()
 
-	return group.Wait()
+	return nil
 }
 
 // 编译和部署

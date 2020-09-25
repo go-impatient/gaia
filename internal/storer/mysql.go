@@ -2,13 +2,15 @@ package storer
 
 import (
 	"database/sql"
-	"github.com/go-impatient/gaia/pkg/dig"
+	"log"
+	"time"
+
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
-	"time"
+
+	"github.com/go-impatient/gaia/pkg/dig"
 )
 
 func init() {
