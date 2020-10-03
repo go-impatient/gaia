@@ -1,29 +1,16 @@
-package model
+package schema
 
-import (
-	"errors"
+import "gorm.io/gorm"
 
-	"github.com/asaskevich/govalidator"
-)
-
-// UserRequest 请求数据结果
-type UserRequest struct {
-	ID       int64  `json:"-" valid:"-"`
-	Username string `json:"username" valid:"-"`
-	Password string `json:"password" valid:"-"`
-	Email    string `json:"email" valid:"email"`
+// 创建一个User数据模型
+type User struct {
+	gorm.Model
+	Username string `gorm:"type:varchar(100);column:username;not null" json:"username" valid:"-"`
+	Password string `gorm:"type:varchar(50);column:password;not null" json:"password" valid:"-"`
+	Email    string `gorm:"type:varchar(100);column:email;unique;not null;" json:"email" valid:"email"`
 }
 
-// UserResponse 返回数据结构
-type UserResponse struct {
-}
-
-// Validate the fields.
-func (u *UserRequest) Validate() error {
-	_, err := govalidator.ValidateStruct(u)
-	if err != nil {
-		return errors.New(err.Error())
-	}
-
-	return nil
+// TableName, 获取User表名称
+func (u *User) TableName() string {
+	return "tb_user"
 }

@@ -2,16 +2,16 @@ package service
 
 import (
 	"context"
+	"github.com/go-impatient/gaia/internal/model/tpl"
 
-	"github.com/go-impatient/gaia/internal/model"
 	"github.com/go-impatient/gaia/internal/repository"
 )
 
 type AdminService interface {
-	Login(ctx context.Context, email, password string) (*model.AdminRequest, error)
-	Register(ctx context.Context, email, password, phoneNumber string) (*model.AdminRequest, error)
+	Login(ctx context.Context, email, password string) (*tpl.AdminRequest, error)
+	Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AdminRequest, error)
 	ChangePassword(ctx context.Context, email, password string) error
-	GetUserProfile(ctx context.Context, email string) (*model.AdminRequest, error)
+	GetUserProfile(ctx context.Context, email string) (*tpl.AdminRequest, error)
 
 	GetRepo() repository.AdminRepository
 }
@@ -26,11 +26,11 @@ func NewAdminService(r repository.AdminRepository) AdminService {
 	}
 }
 
-func (srv *adminService) Login(ctx context.Context, email, password string) (*model.AdminRequest, error) {
+func (srv *adminService) Login(ctx context.Context, email, password string) (*tpl.AdminRequest, error) {
 	panic("implement me")
 }
 
-func (srv *adminService) Register(ctx context.Context, email, password, phoneNumber string) (*model.AdminRequest, error) {
+func (srv *adminService) Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AdminRequest, error) {
 	panic("implement me")
 }
 
@@ -38,7 +38,7 @@ func (srv *adminService) ChangePassword(ctx context.Context, email, password str
 	panic("implement me")
 }
 
-func (srv *adminService) GetUserProfile(ctx context.Context, email string) (*model.AdminRequest, error) {
+func (srv *adminService) GetUserProfile(ctx context.Context, email string) (*tpl.AdminRequest, error) {
 	panic("implement me")
 }
 
