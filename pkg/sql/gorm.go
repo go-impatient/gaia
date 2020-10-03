@@ -10,6 +10,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 
 	"github.com/go-impatient/gaia/pkg/mutex"
 )
@@ -26,6 +27,9 @@ func OpenConnection(config Config) (*gorm.DB, error) {
 
 	db, err := gorm.Open(dialect, &gorm.Config{
 		Logger: &nopLogger{},
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true, // 使用单数表名, 例如: 't_user'
+		},
 	})
 
 	// 尝试多连接几次, 是否能连接成功

@@ -2,13 +2,13 @@ package middleware
 
 import (
 	"fmt"
+	"github.com/go-impatient/gaia/internal/model/tpl"
 	"net/http"
 	"strings"
 	"unicode"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/go-impatient/gaia/internal/model"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -61,7 +61,7 @@ func writeError(ctx *gin.Context, errString string) {
 	if ctx.Writer.Status() != http.StatusOK {
 		status = ctx.Writer.Status()
 	}
-	ctx.JSON(status, &model.ErrorResponseType{
+	ctx.JSON(status, &tpl.ErrorResponseType{
 		Error:     http.StatusText(status),
 		ErrorCode: status,
 		Message:   errString,

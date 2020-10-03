@@ -9,12 +9,18 @@ app:
   max_ping_count: 2
   jwt_secret: "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5"
   tls:
-    cert_path: ""
-    key_path: ""
+    enabled: false # 是否开启https
+    port: 443 # the https port
+    cert_path: "" # the cert file (leave empty when using letsencrypt)
+    key_path: "" # the cert key (leave empty when using letsencrypt)
   auto_tls:
-    enabled: false
-    folder: ".xcache"
-    host: ""
+    enabled: false # if the certificate should be requested from letsencrypt
+    accept_tos: false # if you accept the tos from letsencrypt
+    folder: "data/certs" # the directory of the cache from letsencrypt
+    hosts: # the hosts for which letsencrypt should request certificates
+      - example1.com
+      - example2.com
+
 database:
   dialect: "mysql"
   host: "localhost"

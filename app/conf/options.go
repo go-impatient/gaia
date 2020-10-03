@@ -23,15 +23,18 @@ type App struct {
 
 // TLS ...
 type TLS struct {
-	CertPath string `json:"cert_path" yaml:"cert_path"`
-	KeyPath  string `json:"key_path" yaml:"key_path"`
+	Enabled         bool   `json:"enabled" yaml:"enabled"`                     //  是否开启https
+	Port            int    `json:"port" yaml:"port"`                           // https 端口
+	CertPath        string `json:"cert_path" yaml:"cert_path"`                 // the cert file (leave empty when using letsencrypt)
+	KeyPath         string `json:"key_path" yaml:"key_path"`                   // the cert key (leave empty when using letsencrypt)
 }
 
 // AutoTLS ...
 type AutoTLS struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"` // Automatically install TLS certificates from Let's Encrypt.
-	Folder  string `json:"folder" yaml:"folder"`   // folder for storing TLS certificates
-	Host    string `json:"host" yaml:"string"`     // invalid hosts will be silently ignored.
+	Enabled   bool     `json:"enabled" yaml:"enabled"`       // if the certificate should be requested from letsencrypt
+	AcceptTos bool     `json:"accept_tos" yaml:"accept_tos"` // if you accept the tos from letsencrypt
+	Folder    string   `json:"folder" yaml:"folder"`         // the directory of the cache from letsencrypt
+	Hosts     []string `json:"hosts" yaml:"hosts"`           // the hosts for which letsencrypt should request certificates
 }
 
 // DB ...
@@ -87,7 +90,7 @@ type ConfigTpl struct {
 	Database *DB    `json:"database" yaml:"database"`
 	Log      *Log   `json:"log" yaml:"log"`
 	Mail     *Mail  `json:"mail" yaml:"mail"`
-	Cache    *Cache `json:"xcache" yaml:"xcache"`
+	Cache    *Cache `json:"cache" yaml:"cache"`
 }
 
 // NewAppConfig ...
@@ -101,13 +104,16 @@ func NewAppConfig(cfg *viper.Viper) *App {
 		WriteTimeout: cfg.GetDuration("write_timeout"),
 		IdleTimeout:  cfg.GetDuration("idle_timeout"),
 		TLS: &TLS{
+			Enabled: cfg.GetBool("tls.enabled"),
+			Port: cfg.GetInt("tls.port"),
 			CertPath: cfg.GetString("tls.cert_path"),
 			KeyPath:  cfg.GetString("tls.key_path"),
 		},
 		AutoTLS: &AutoTLS{
 			Enabled: cfg.GetBool("auto_tls.enabled"),
+			AcceptTos: cfg.GetBool("auto_tls.auto_tls"),
 			Folder:  cfg.GetString("auto_tls.folder"),
-			Host:    cfg.GetString("auto_tls.host"),
+			Hosts:    cfg.GetStringSlice("auto_tls.hosts"),
 		},
 	}
 }

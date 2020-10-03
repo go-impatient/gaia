@@ -1,22 +1,17 @@
-package strings
+package str
 
 import (
 	"strings"
 	"unicode"
-	"github.com/gofrs/uuid"
+
+	"github.com/satori/go.uuid"
 )
 
-/*
-IsBlank checks if a string is whitespace or empty (""). Observe the following behavior:
-    goutils.IsBlank("")        = true
-    goutils.IsBlank(" ")       = true
-    goutils.IsBlank("bob")     = false
-    goutils.IsBlank("  bob  ") = false
-Parameter:
-    str - the string to check
-Returns:
-    true - if the string is whitespace or empty ("")
-*/
+// IsBlank checks if a string is whitespace or empty ("").
+// goutils.IsBlank("")        = true
+// goutils.IsBlank(" ")       = true
+// goutils.IsBlank("bob")     = false
+// goutils.IsBlank("  bob  ") = false
 func IsBlank(str string) bool {
 	strLen := len(str)
 	if str == "" || strLen == 0 {
@@ -30,10 +25,12 @@ func IsBlank(str string) bool {
 	return true
 }
 
+// IsNotBlank
 func IsNotBlank(str string) bool {
 	return !IsBlank(str)
 }
 
+// DefaultIfBlank
 func DefaultIfBlank(str, def string) string {
 	if IsBlank(str) {
 		return def
@@ -47,11 +44,12 @@ func IsEmpty(str string) bool {
 	return len(str) == 0
 }
 
+// IsNotEmpty
 func IsNotEmpty(str string) bool {
 	return !IsEmpty(str)
 }
 
-// 截取字符串
+// Substr 截取字符串
 func Substr(s string, start, length int) string {
 	bt := []rune(s)
 	if start < 0 {
@@ -71,14 +69,16 @@ func Substr(s string, start, length int) string {
 
 // UUID
 func UUID() string {
-	u, _ := uuid.NewV4()
+	u := uuid.NewV4()
 	return strings.ReplaceAll(u.String(), "-", "")
 }
 
+// Equals
 func Equals(a, b string) bool {
 	return a == b
 }
 
+// EqualsIgnoreCase
 func EqualsIgnoreCase(a, b string) bool {
 	return a == b || strings.ToUpper(a) == strings.ToUpper(b)
 }

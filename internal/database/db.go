@@ -1,16 +1,25 @@
-package service
+package database
 
 import (
 	"database/sql"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 
 	"github.com/go-impatient/gaia/app/conf"
-	sqlx "github.com/go-impatient/gaia/pkg/sql"
+	orm "github.com/go-impatient/gaia/pkg/sql"
 )
+
+var (
+	defaultOrm *gorm.DB
+	ormMap sync.Map
+)
+
+// AsDefault alias for "default"
+const AsDefault = "default"
 
 // SQL ...
 type SQL struct {
@@ -30,29 +39,49 @@ func NewSQL() *SQL {
 	ssl := conf.Config.Database.Ssl
 
 	// 根据方言选择数据库配置
-	driverName, _ := sqlx.ParseDriverName(dialect)
-	var sqlConfig sqlx.Config
+	driverName, _ := orm.ParseDriverName(dialect)
+	var sqlConfig orm.Config
 	switch driverName {
-	case sqlx.SQLITE:
-	case sqlx.MYSQL:
-		sqlConfig = sqlx.NewMySqlConfig(host, username, password, database, port, maxIdleConnection, maxOpenConnection)
-	case sqlx.POSTGRES:
-		sqlConfig = sqlx.NewPostgresConfig(host, username, password, database, ssl, port, maxIdleConnection, maxOpenConnection)
+	case orm.SQLITE:
+	case orm.MYSQL:
+		sqlConfig = orm.NewMySqlConfig(host, username, password, database, port, maxIdleConnection, maxOpenConnection)
+	case orm.POSTGRES:
+		sqlConfig = orm.NewPostgresConfig(host, username, password, database, ssl, port, maxIdleConnection, maxOpenConnection)
 	default:
 		log.Panicf("Database dialect `%s` not supported \n", dialect)
 	}
 
 	// 连接数据库
-	db, _ := sqlx.OpenConnection(sqlConfig)
+	db, _ := orm.OpenConnection(sqlConfig)
 
 	// 测试数据库心跳
 	if err := pingDB(db); err != nil {
 		log.Printf("Failed to connect database, got error %v\n", err)
 	}
 
+	defaultOrm = db
+	ormMap.Store("default", db)
+
 	return &SQL{
 		DB: db,
 	}
+}
+
+// Orm returns an orm's db.
+func Orm(name ...string) *gorm.DB {
+	if len(name) == 0 || name[0] == AsDefault {
+		if defaultOrm == nil {
+			log.Panicf("Invalid db `%s` \n", AsDefault)
+		}
+		return defaultOrm
+	}
+
+	v, ok := ormMap.Load(name[0])
+	if ! ok {
+		log.Panicf("Invalid db `%s` \n", name[0])
+	}
+
+	return v.(*gorm.DB)
 }
 
 // DBStats ... 数据库统计信息

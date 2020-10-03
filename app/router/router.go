@@ -8,7 +8,7 @@ import (
 	"github.com/go-impatient/gaia/app/handler"
 	sdHandle "github.com/go-impatient/gaia/app/handler/sd"
 	"github.com/go-impatient/gaia/app/middleware"
-	"github.com/go-impatient/gaia/internal/model"
+	"github.com/go-impatient/gaia/internal/model/tpl"
 	"github.com/go-impatient/gaia/internal/service"
 )
 
@@ -21,7 +21,7 @@ func rootHandler(c *gin.Context) {
 // NotFound creates a gin middleware for handling page not found.
 func NotFound() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, &model.ErrorResponseType{
+		c.JSON(http.StatusNotFound, &tpl.ErrorResponseType{
 			Error:     http.StatusText(http.StatusNotFound),
 			ErrorCode: http.StatusNotFound,
 			Message:   "page not found",
@@ -54,5 +54,5 @@ func RegisterRoutes(router *gin.Engine, services *service.Services) {
 		svcd.GET("/ram", sdHandle.RAMCheck)
 	}
 
-	handler.MakeUserHandler(router, services.User)
+	handler.MakeUserHandler(router, services)
 }

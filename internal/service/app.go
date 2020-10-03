@@ -2,46 +2,46 @@ package service
 
 import (
 	"context"
-	"github.com/go-impatient/gaia/internal/model/tpl"
 
+	"github.com/go-impatient/gaia/internal/model/tpl"
 	"github.com/go-impatient/gaia/internal/repository"
 )
 
-type AdminService interface {
-	Login(ctx context.Context, email, password string) (*tpl.AdminRequest, error)
-	Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AdminRequest, error)
+type AppService interface {
+	Login(ctx context.Context, email, password string) (*tpl.AppRequest, error)
+	Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AppRequest, error)
 	ChangePassword(ctx context.Context, email, password string) error
-	GetUserProfile(ctx context.Context, email string) (*tpl.AdminRequest, error)
+	GetUserProfile(ctx context.Context, email string) (*tpl.AppRequest, error)
 
-	GetRepo() repository.AdminRepository
+	GetRepo() repository.AppRepository
 }
 
-type adminService struct {
-	repo repository.AdminRepository
+type appService struct {
+	repo repository.AppRepository
 }
 
-func NewAdminService(r repository.AdminRepository) AdminService {
-	return &adminService{
+func NewAppService(r repository.AppRepository) AppService {
+	return &appService{
 		repo: r,
 	}
 }
 
-func (srv *adminService) Login(ctx context.Context, email, password string) (*tpl.AdminRequest, error) {
+func (srv *appService) Login(ctx context.Context, email, password string) (*tpl.AppRequest, error) {
 	panic("implement me")
 }
 
-func (srv *adminService) Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AdminRequest, error) {
+func (srv *appService) Register(ctx context.Context, email, password, phoneNumber string) (*tpl.AppRequest, error) {
 	panic("implement me")
 }
 
-func (srv *adminService) ChangePassword(ctx context.Context, email, password string) error {
+func (srv *appService) ChangePassword(ctx context.Context, email, password string) error {
 	panic("implement me")
 }
 
-func (srv *adminService) GetUserProfile(ctx context.Context, email string) (*tpl.AdminRequest, error) {
+func (srv *appService) GetUserProfile(ctx context.Context, email string) (*tpl.AppRequest, error) {
 	panic("implement me")
 }
 
-func (srv *adminService) GetRepo() repository.AdminRepository {
+func (srv *appService) GetRepo() repository.AppRepository {
 	return srv.repo
 }

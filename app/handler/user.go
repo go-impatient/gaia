@@ -10,13 +10,13 @@ import (
 
 // UserHandler ...
 type userHandler struct {
-	userService service.UserService
+	UserService service.UserService
 }
 
 // Login 用户登录
 func (handler *userHandler) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		handler.userService.Login(c, "", "")
+		handler.UserService.Login(c, "", "")
 
 		c.JSON(http.StatusOK, gin.H{
 			"text": "登录成功.",
@@ -27,7 +27,7 @@ func (handler *userHandler) Login() gin.HandlerFunc {
 // Register 注册
 func (handler *userHandler) Register() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		handler.userService.Register(c, "", "", "")
+		handler.UserService.Register(c, "", "", "")
 
 		c.JSON(http.StatusOK, gin.H{
 			"text": "注册成功.",
@@ -35,12 +35,12 @@ func (handler *userHandler) Register() gin.HandlerFunc {
 	}
 }
 
-func MakeUserHandler(r *gin.Engine, srv service.UserService) {
-	handler := &userHandler{userService: srv}
+func MakeUserHandler(r *gin.Engine, srv *service.Services) {
+	handler := &userHandler{UserService: srv.User}
 
 	userGroup := r.Group("/user")
 	{
-		userGroup.POST("/login", handler.Login())
+		userGroup.GET("/login", handler.Login())
 		userGroup.POST("/register", handler.Register())
 	}
 }

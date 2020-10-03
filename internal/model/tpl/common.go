@@ -1,4 +1,4 @@
-package model
+package tpl
 
 // Data is the parent model for returning data in this api,
 // includes meta for pagination

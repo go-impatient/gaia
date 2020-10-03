@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"path"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 
@@ -15,8 +17,15 @@ var MailConfig = new(Mail)
 var CacheConfig = new(Cache)
 var Config = new(ConfigTpl)
 
-func InitConfig(name string, format string) (*ConfigTpl, error) {
-	if err := conf.LoadConfig(name, format); err != nil {
+func InitConfig(name string) (*ConfigTpl, error) {
+	// 获取文件后缀
+	fileSuffix := path.Ext(name)
+	if len(fileSuffix) > 1 {
+		// 去掉后缀中.字符
+		fileSuffix = fileSuffix[1:]
+	}
+
+	if err := conf.LoadConfig(name, fileSuffix); err != nil {
 		return nil, err
 	}
 
@@ -49,9 +58,9 @@ func InitConfig(name string, format string) (*ConfigTpl, error) {
 	MailConfig = NewMailConfig(mail)
 
 	// 缓存配置
-	cache := viper.Sub("xcache")
+	cache := viper.Sub("cache")
 	if cache == nil {
-		return nil, errors.New("No found `xcache` in the configuration")
+		return nil, errors.New("No found `cache` in the configuration")
 	}
 	CacheConfig = NewCacheConfig(cache)
 

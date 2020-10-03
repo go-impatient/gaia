@@ -10,13 +10,16 @@
     "max_ping_count": 2,
     "jwt_secret": "Rtg8BPKNEf2mB4mgvKONGPZZQSaJWNLijxR42qRgq0iBb5",
     "tls": {
+      "enabled": false,
+      "port": 443,
       "cert_path": "./../../config/gaia.crt",
       "key_path": "./../../config/gaia.key"
     },
     "auto_tls": {
-      "enabled": true,
-      "folder": "/.cache",
-      "host": "example1.com"
+      "enabled": false,
+      "accept_tos": false,
+      "folder": "data/certs",
+      "hosts": ["example1.com", "example2.com"]
     }
   },
   "database": {
